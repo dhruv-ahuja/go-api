@@ -1,0 +1,12 @@
+package main
+
+import (
+	"database/sql"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func connectToDB(dbPath string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	return db, err
+}
