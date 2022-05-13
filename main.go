@@ -23,12 +23,13 @@ func main() {
 	}
 }
 
+// index is the default endpoint for the api
 func index(w http.ResponseWriter, r *http.Request) {
-	msg := map[string]string{
-		"message": "hello",
+	msg := jsonResponse{
+		Message: "Hello, World!",
 	}
-	data, err := json.Marshal(msg)
 
+	data, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
 	}
