@@ -1,3 +1,7 @@
+# manually defined 
+*.db 
+.env 
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
