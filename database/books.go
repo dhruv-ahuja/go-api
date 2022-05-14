@@ -29,7 +29,7 @@ func GetBooks(db *sql.DB) ([]Book, error) {
 
 	// rows is an iterable and we keep on iterating over the results till there
 	// are none remaining
-	for rows != nil {
+	for rows.Next() {
 		var book Book
 		// we scan and copy over each column value for each row fetched to
 		// the structs' fields. the pointer points to their memory addresses
