@@ -24,12 +24,13 @@ func main() {
 	dbPath := os.Getenv("DB")
 	if dbPath == "" {
 		dbPath = "./sqlite.db"
-		fmt.Println("'DB' environment variable not set, creating database in current directory...")
 	}
 
 	db, err := connectToDB(dbPath)
 	checkErr("error connecting to database: ", err)
 	defer db.Close()
+
+	checkErr("error creating table: ", createTable(db))
 
 	fmt.Println("live on port 8080...")
 
