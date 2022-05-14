@@ -4,8 +4,21 @@ import (
 	"database/sql"
 	"os"
 
+	"github.com/dhruv-ahuja/go-api/helpers"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// Init initializes the database connection and runs the CreateTable function
+// for us in one place, helping declutter the main function.
+func Init(dbPath string) (*sql.DB, error) {
+	db, err := ConnectToDB(dbPath)
+
+	helpers.CheckErr("error connecting to database: ", err)
+	// directly feeding the CreateTable func to CheckErr
+	helpers.CheckErr("error when creating table: ", CreateTable(db))
+
+	return db, err
+}
 
 func ConnectToDB(dbPath string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", dbPath)
