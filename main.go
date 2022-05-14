@@ -20,21 +20,19 @@ func main() {
 		dbPath = "./app.db"
 	}
 
-	db, err := database.ConnectToDB(dbPath)
-	helpers.CheckErr("error connecting to database: ", err)
+	// Init connects to the DB and also runs the CreateTable func
+	db := database.Init(dbPath)
 	defer db.Close()
 
-	helpers.CheckErr("error when creating table: ", database.CreateTable(db))
-	// api.CheckErr("error when dropping table: ", database.DropTable(db))
+	// creating a Connection instance to use to register handlers for the
+	// web server
+	c := api.NewConnection(db)
 
 	fmt.Println("live on port 8080...")
-
-	// creating a struct instance
-	c := api.NewConnection(db)
 
 	http.HandleFunc("/", c.Index)
 	http.HandleFunc("/books", c.GetBooks)
 
-	err = http.ListenAndServe("localhost:8080", nil)
-	helpers.CheckErr("", err)
+	err := http.ListenAndServe("localhost:8080", nil)
+	helpers.CheckErr("error when serving endpoints: ", err)
 }

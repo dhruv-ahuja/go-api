@@ -27,7 +27,7 @@ func NewConnection(db *sql.DB) *Connection {
 	}
 }
 
-// index is the default endpoint for the api
+// Index is the entrypoint to the api
 func (c Connection) Index(w http.ResponseWriter, r *http.Request) {
 	msg := jsonResponse{
 		Message: "Hello, World!",
