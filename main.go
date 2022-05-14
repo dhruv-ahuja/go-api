@@ -23,7 +23,7 @@ func main() {
 
 	dbPath := os.Getenv("DB")
 	if dbPath == "" {
-		dbPath = "./sqlite.db"
+		dbPath = "./app.db"
 	}
 
 	db, err := connectToDB(dbPath)

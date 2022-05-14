@@ -36,3 +36,9 @@ func createTable(db *sql.DB) error {
 	_, err := db.Exec(query)
 	return err
 }
+
+func dropTable(db *sql.DB) error {
+	query := `DROP TABLE IF EXISTS books;`
+	_, err := db.Exec(query)
+	return err
+}
