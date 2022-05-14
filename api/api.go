@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/dhruv-ahuja/go-api/database"
+	"github.com/dhruv-ahuja/go-api/helpers"
 )
 
 type Connection struct {
@@ -27,23 +28,23 @@ func NewConnection(db *sql.DB) *Connection {
 }
 
 // index is the default endpoint for the api
-func (c Connection) index(w http.ResponseWriter, r *http.Request) {
+func (c Connection) Index(w http.ResponseWriter, r *http.Request) {
 	msg := jsonResponse{
 		Message: "Hello, World!",
 	}
 
 	data, err := json.Marshal(msg)
-	checkErr("", err)
+	helpers.CheckErr("error converting to JSON: ", err)
 
 	fmt.Fprintln(w, string(data))
 }
 
-func (c Connection) allBooks(w http.ResponseWriter, r *http.Request) {
+func (c Connection) GetBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := database.GetBooks(c.DB)
-	checkErr("error while fetching books from the DB", err)
+	helpers.CheckErr("error while fetching books from the DB", err)
 
 	data, err := json.Marshal(books)
-	checkErr("", err)
+	helpers.CheckErr("error converting to JSON: ", err)
 
 	fmt.Fprint(w, string(data))
 }
