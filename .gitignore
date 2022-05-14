@@ -1,6 +1,7 @@
 # manually defined 
 *.db 
 .env 
+go-api
 
 # Binaries for programs and plugins
 *.exe
