@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/dhruv-ahuja/go-api/database"
 	"github.com/joho/godotenv"
 )
 
@@ -26,12 +27,12 @@ func main() {
 		dbPath = "./app.db"
 	}
 
-	db, err := connectToDB(dbPath)
+	db, err := database.ConnectToDB(dbPath)
 	checkErr("error connecting to database: ", err)
 	defer db.Close()
 
-	checkErr("error creating table: ", createTable(db))
-	// checkErr("error dropping table: ", dropTable(db))
+	checkErr("error when creating table: ", database.CreateTable(db))
+	// checkErr("error when dropping table: ", database.DropTable(db))
 
 	fmt.Println("live on port 8080...")
 

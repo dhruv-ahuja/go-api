@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"database/sql"
@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func connectToDB(dbPath string) (*sql.DB, error) {
+func ConnectToDB(dbPath string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	return db, err
 }
@@ -24,7 +24,7 @@ type Book struct {
 	Year   int    `json:"year,omitempty"`
 }
 
-func createTable(db *sql.DB) error {
+func CreateTable(db *sql.DB) error {
 	// path to the initial migration file
 	sqlPath := "./migrations/001_init.up.sql"
 
@@ -40,7 +40,7 @@ func createTable(db *sql.DB) error {
 	return err
 }
 
-func dropTable(db *sql.DB) error {
+func DropTable(db *sql.DB) error {
 	// path to the migration file to drop table
 	sqlPath := "./migrations/001_init.down.sql"
 
