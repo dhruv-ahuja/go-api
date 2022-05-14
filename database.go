@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -24,21 +25,30 @@ type Book struct {
 }
 
 func createTable(db *sql.DB) error {
-	query := `CREATE TABLE IF NOT EXISTS books (
-		id INTEGER PRIMARY KEY,
-		isbn INTEGER,
-		title TEXT NOT NULL,
-		author TEXT NOT NULL,
-		genre TEXT NOT NULL,
-		year INTEGER
-		);`
+	// path to the initial migration file
+	sqlPath := "./migrations/001_init.up.sql"
 
-	_, err := db.Exec(query)
+	// query will contain the contents of our sql file in the form of byte slice
+	// this can then be passed onto the database query
+	// after conversion to string
+	query, ioErr := os.ReadFile(sqlPath)
+	if ioErr != nil {
+		return ioErr
+	}
+
+	_, err := db.Exec(string(query))
 	return err
 }
 
 func dropTable(db *sql.DB) error {
-	query := `DROP TABLE IF EXISTS books;`
-	_, err := db.Exec(query)
+	// path to the migration file to drop table
+	sqlPath := "./migrations/001_init.down.sql"
+
+	query, ioErr := os.ReadFile(sqlPath)
+	if ioErr != nil {
+		return ioErr
+	}
+
+	_, err := db.Exec(string(query))
 	return err
 }
