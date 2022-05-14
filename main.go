@@ -31,14 +31,13 @@ func main() {
 	defer db.Close()
 
 	checkErr("error creating table: ", createTable(db))
+	// checkErr("error dropping table: ", dropTable(db))
 
 	fmt.Println("live on port 8080...")
 
 	http.HandleFunc("/", index)
 	err = http.ListenAndServe("localhost:8080", nil)
-	if err != nil {
-		panic(err)
-	}
+	checkErr("", err)
 }
 
 // index is the default endpoint for the api
@@ -48,9 +47,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
+	checkErr("", err)
 
 	fmt.Fprintln(w, string(data))
 }
