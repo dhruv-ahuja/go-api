@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -36,13 +37,28 @@ func main() {
 
 	fmt.Println("live on port 8080...")
 
-	http.HandleFunc("/", index)
+	// creating a struct instance
+	c := NewConnection(db)
+
+	http.HandleFunc("/", c.index)
+	http.HandleFunc("/books", c.allBooks)
+
 	err = http.ListenAndServe("localhost:8080", nil)
 	checkErr("", err)
 }
 
+type Connection struct {
+	DB *sql.DB
+}
+
+func NewConnection(db *sql.DB) *Connection {
+	return &Connection{
+		DB: db,
+	}
+}
+
 // index is the default endpoint for the api
-func index(w http.ResponseWriter, r *http.Request) {
+func (c Connection) index(w http.ResponseWriter, r *http.Request) {
 	msg := jsonResponse{
 		Message: "Hello, World!",
 	}
@@ -51,6 +67,17 @@ func index(w http.ResponseWriter, r *http.Request) {
 	checkErr("", err)
 
 	fmt.Fprintln(w, string(data))
+}
+
+func (c Connection) allBooks(w http.ResponseWriter, r *http.Request) {
+	books, err := database.GetBooks(c.DB)
+	checkErr("error while fetching books from the DB", err)
+
+	data, err := json.Marshal(books)
+	checkErr("", err)
+
+	fmt.Fprintln(w, books)
+	fmt.Fprint(w, string(data))
 }
 
 // checkErr checks for error in given functions/methods. It also outputs an
