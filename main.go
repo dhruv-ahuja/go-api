@@ -19,7 +19,7 @@ type jsonResponse struct {
 
 func main() {
 	// loading .env file and checking for errors directly
-	checkErr(godotenv.Load(), "error loading .env file:")
+	checkErr("error loading .env file: ", godotenv.Load())
 
 	dbPath := os.Getenv("DB")
 	if dbPath == "" {
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	db, err := connectToDB(dbPath)
-	checkErr(err, "error connecting to database: ")
+	checkErr("error connecting to database: ", err)
 	defer db.Close()
 
 	fmt.Println("live on port 8080...")
@@ -56,7 +56,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 // checkErr checks for error in given functions/methods. It also outputs an
 // error message, if given one.
-func checkErr(err error, errMsg string) {
+func checkErr(errMsg string, err error) {
 	if err != nil {
 		log.Fatal(errMsg, err)
 	}
