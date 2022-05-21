@@ -3,6 +3,6 @@ CREATE TABLE IF NOT EXISTS books (
 		isbn INTEGER,
 		title TEXT NOT NULL,
 		author TEXT NOT NULL,
-		genre TEXT NOT NULL,
+		genres TEXT NOT NULL,
 		year INTEGER
 		);
