@@ -72,7 +72,12 @@ func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 		// setting the header status code to 201/Created to indicate success
 		// with creating a new resource
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintln(w, book)
-	}
+		// set the content type so that the user knows what type of data to expect
+		w.Header().Set("Content-Type", "application/json")
 
+		data, err := json.Marshal(book)
+		helpers.CheckErr("error converting data to JSON: ", err)
+
+		fmt.Fprintln(w, string(data))
+	}
 }
