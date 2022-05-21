@@ -15,7 +15,7 @@ func Init(dbPath string) *sql.DB {
 
 	helpers.CheckErr("error connecting to database: ", err)
 	// directly feeding the CreateTable func to CheckErr
-	helpers.CheckErr("error when creating table: ", CreateTable(db))
+	helpers.CheckErr("error when creating table: ", createTable(db))
 
 	return db
 }
@@ -25,7 +25,7 @@ func ConnectToDB(dbPath string) (*sql.DB, error) {
 	return db, err
 }
 
-func CreateTable(db *sql.DB) error {
+func createTable(db *sql.DB) error {
 	// path to the initial migration file
 	sqlPath := "./migrations/001_init.up.sql"
 
@@ -41,7 +41,7 @@ func CreateTable(db *sql.DB) error {
 	return err
 }
 
-func DropTable(db *sql.DB) error {
+func dropTable(db *sql.DB) error {
 	// path to the migration file to drop table
 	sqlPath := "./migrations/001_init.down.sql"
 

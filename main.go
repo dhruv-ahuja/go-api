@@ -20,7 +20,7 @@ func main() {
 		dbPath = "./app.db"
 	}
 
-	// Init connects to the DB and also runs the CreateTable func
+	// Init connects to the DB and also runs the createTable func
 	db := database.Init(dbPath)
 	defer db.Close()
 
@@ -31,7 +31,8 @@ func main() {
 	fmt.Println("live on port 8080...")
 
 	http.HandleFunc("/", c.Index)
-	http.HandleFunc("/books", c.GetBooks)
+	http.HandleFunc("/books", c.GetAllBooks)
+	http.HandleFunc("/add/books", c.AddABook)
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	helpers.CheckErr("error when serving endpoints: ", err)
