@@ -8,6 +8,12 @@ import (
 	"encoding/json"
 )
 
+type Store interface {
+	GetBooks(*sql.DB) ([]Book, error)
+	AddBook(*sql.DB, *json.Decoder) (*Book, error)
+	UpdateBook(*sql.DB, *json.Decoder) (*Book, error)
+}
+
 type Book struct {
 	// all field tags must be exported through capitalization
 	// if they are to be used in the JSON encodings
@@ -81,4 +87,10 @@ func AddBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 	}
 
 	return res, err
+}
+
+// UpdateBook receives the book to be updated as POST body and updates it in
+// the database.
+func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
+	return nil, nil
 }
