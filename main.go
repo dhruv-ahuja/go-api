@@ -33,6 +33,7 @@ func main() {
 	http.HandleFunc("/", c.Index)
 	http.HandleFunc("/books", c.GetAllBooks)
 	http.HandleFunc("/add/books", c.AddABook)
+	http.HandleFunc("/put/books", c.UpdateABook)
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	helpers.CheckErr("error when serving endpoints: ", err)

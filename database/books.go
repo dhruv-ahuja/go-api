@@ -67,7 +67,7 @@ func AddBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 	// this will return an error if there is a mismatch between the data received
 	// in the POST request and the struct fields the data is being written to
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&book)
+	err := decoder.Decode(book)
 	if err != nil {
 		return nil, err
 	}
@@ -92,5 +92,24 @@ func AddBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 // UpdateBook receives the book to be updated as POST body and updates it in
 // the database.
 func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
-	return nil, nil
+	book := &Book{}
+
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(book)
+	if err != nil {
+		return nil, err
+	}
+
+	query := `UPDATE books SET isbn=?, title=?, author=?, genres=?, year=? WHERE id=?
+	RETURNING *;`
+
+	row := db.QueryRow(query, book.ISBN, book.Title, book.Author, book.Genres, book.Year, book.ID)
+
+	res := &Book{}
+	err = row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author, &res.Genres, &res.Year)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
