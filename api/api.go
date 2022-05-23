@@ -66,21 +66,26 @@ func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 
 func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
 	getID := chi.URLParam(r, "id")
+
 	if getID != "" {
 		bookID, err := strconv.Atoi(getID)
-		if err != nil {
-			helpers.CheckErr("error converting string to int: ", err)
-		}
+		helpers.CheckErr("error converting string to int: ", err)
 
 		book, err := database.GetBook(c.DB, bookID)
-		if err != nil {
+		// if the error is 'ErrNoRows' that means that no data was found
+		// for that ID
+		if err != nil && err != sql.ErrNoRows {
 			helpers.CheckErr("error fetching book from the DB: ", err)
 		}
 
-		data, err := json.Marshal(book)
-		if err != nil {
-			helpers.CheckErr("error converting to JSON: ", err)
+		// in case we don't receive any data from the db, we set the
+		// 404 status code to indicate resource wasn't found
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusNotFound)
 		}
+
+		data, err := json.Marshal(book)
+		helpers.CheckErr("error converting to JSON: ", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, string(data))
@@ -90,7 +95,13 @@ func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
 // GetAllBooks performs the Read operation of the API
 func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := database.GetBooks(c.DB)
-	helpers.CheckErr("error fetching books from the DB", err)
+	if err != nil && err != sql.ErrNoRows {
+		helpers.CheckErr("error fetching books from the DB", err)
+	}
+
+	if err == sql.ErrNoRows {
+		w.WriteHeader(http.StatusNotFound)
+	}
 
 	data, err := json.Marshal(books)
 	helpers.CheckErr("error converting to JSON: ", err)
@@ -123,14 +134,10 @@ func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 	if getID != "" {
 		// since the param is sent with the URL, it is in the string form
 		bookID, err := strconv.Atoi(getID)
-		if err != nil {
-			helpers.CheckErr("error converting string to int: ", err)
-		}
+		helpers.CheckErr("error converting string to int: ", err)
 
 		err = database.DeleteBook(c.DB, bookID)
-		if err != nil {
-			helpers.CheckErr("error deleting book from database: ", err)
-		}
+		helpers.CheckErr("error deleting book from database: ", err)
 
 		// StatusNoContent or Status 204 indicates that the request was fulfilled
 		// we don't need to send any data back, ideal response for a delete request
