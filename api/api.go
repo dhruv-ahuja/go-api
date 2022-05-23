@@ -136,8 +136,15 @@ func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 		bookID, err := strconv.Atoi(getID)
 		helpers.CheckErr("error converting string to int: ", err)
 
-		err = database.DeleteBook(c.DB, bookID)
+		// we have to check whether the ID was valid or not
+		// the query result will help us do that
+		res, err := database.DeleteBook(c.DB, bookID)
 		helpers.CheckErr("error deleting book from database: ", err)
+
+		// the ID was invalid if no rows were affected, so we just return a 404
+		if rows, _ := res.RowsAffected(); rows == 0 {
+			w.WriteHeader(http.StatusNotFound)
+		}
 
 		// StatusNoContent or Status 204 indicates that the request was fulfilled
 		// we don't need to send any data back, ideal response for a delete request
