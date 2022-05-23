@@ -46,36 +46,22 @@ func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
 
 // AddABook performs the Create operation of the API
 func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		msg := jsonResponse{
-			Message: "Add a book by sending a POST request.",
-		}
+	decoder := json.NewDecoder(r.Body)
 
-		data, err := json.Marshal(msg)
-		helpers.CheckErr("error converting data to JSON: ", err)
+	book, err := database.AddBook(c.DB, decoder)
+	helpers.CheckErr("error adding book to database: ", err)
 
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(data))
+	data, err := json.Marshal(book)
+	helpers.CheckErr("error converting data to JSON: ", err)
 
-	case "POST":
-		decoder := json.NewDecoder(r.Body)
+	// set the content type so that the user knows what type of data to expect
+	w.Header().Set("Content-Type", "application/json")
 
-		book, err := database.AddBook(c.DB, decoder)
-		helpers.CheckErr("error adding book to database: ", err)
+	// setting the header status code to 201/Created to indicate success
+	// with creating a new resource
+	w.WriteHeader(http.StatusCreated)
 
-		data, err := json.Marshal(book)
-		helpers.CheckErr("error converting data to JSON: ", err)
-
-		// set the content type so that the user knows what type of data to expect
-		w.Header().Set("Content-Type", "application/json")
-
-		// setting the header status code to 201/Created to indicate success
-		// with creating a new resource
-		w.WriteHeader(http.StatusCreated)
-
-		fmt.Fprintln(w, string(data))
-	}
+	fmt.Fprintln(w, string(data))
 }
 
 // GetAllBooks performs the Read operation of the API
@@ -92,19 +78,16 @@ func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 // UpdateABook performs the UPDATE operation of the API
 func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "PUT":
-		decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(r.Body)
 
-		book, err := database.UpdateBook(c.DB, decoder)
-		helpers.CheckErr("error updating book in database: ", err)
+	book, err := database.UpdateBook(c.DB, decoder)
+	helpers.CheckErr("error updating book in database: ", err)
 
-		data, err := json.Marshal(book)
-		helpers.CheckErr("error converting data to JSON: ", err)
+	data, err := json.Marshal(book)
+	helpers.CheckErr("error converting data to JSON: ", err)
 
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(data))
-	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintln(w, string(data))
 }
 
 // DeleteABook performs the DELETE operation of the API
