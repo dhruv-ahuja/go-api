@@ -113,3 +113,16 @@ func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 
 	return res, nil
 }
+
+// DeleteBook receives the book to deleted as POST body and remvoes it from
+// the database.
+func DeleteBook(db *sql.DB, bookID int) error {
+	query := `DELETE FROM books WHERE id=?;`
+
+	_, err := db.Exec(query, bookID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
