@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/dhruv-ahuja/go-api/database"
 	"github.com/dhruv-ahuja/go-api/helpers"
+	"github.com/go-chi/chi/v5"
 )
 
 type Connection struct {
@@ -42,7 +44,7 @@ func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(data))
 }
 
-// AddABook is the Create operation of the API
+// AddABook performs the Create operation of the API
 func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -76,7 +78,7 @@ func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetAllBooks is the Read operation of the API
+// GetAllBooks performs the Read operation of the API
 func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := database.GetBooks(c.DB)
 	helpers.CheckErr("error fetching books from the DB", err)
@@ -88,7 +90,7 @@ func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(data))
 }
 
-// UpdateABook is the UPDATE operation of the API
+// UpdateABook performs the UPDATE operation of the API
 func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "PUT":
@@ -103,4 +105,29 @@ func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, string(data))
 	}
+}
+
+// DeleteABook performs the DELETE operation of the API
+func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
+	// URL param fetches the named parameter in the URL
+	// in our case, `/books/{id}`: here 'id' is the url param
+	getID := chi.URLParam(r, "id")
+
+	if getID != "" {
+		// since the param is sent with the URL, it is in the string form
+		bookID, err := strconv.Atoi(getID)
+		if err != nil {
+			helpers.CheckErr("error converting string to int: ", err)
+		}
+
+		err = database.DeleteBook(c.DB, bookID)
+		if err != nil {
+			helpers.CheckErr("error deleting book from database: ", err)
+		}
+
+		// StatusNoContent or Status 204 indicates that the request was fulfilled
+		// we don't need to send any data back, ideal response for a delete request
+		w.WriteHeader(http.StatusNoContent)
+	}
+
 }
