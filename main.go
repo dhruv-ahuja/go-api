@@ -8,6 +8,7 @@ import (
 	"github.com/dhruv-ahuja/go-api/api"
 	"github.com/dhruv-ahuja/go-api/database"
 	"github.com/dhruv-ahuja/go-api/helpers"
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -27,14 +28,23 @@ func main() {
 	// creating a Connection instance to use to register handlers for the
 	// web server
 	c := api.NewConnection(db)
+	// implement chi as the router of choice to get more functionality over
+	// the net/http router
+	r := chi.NewRouter()
 
 	fmt.Println("live on port 8080...")
 
-	http.HandleFunc("/", c.Index)
-	http.HandleFunc("/books", c.GetAllBooks)
-	http.HandleFunc("/add/books", c.AddABook)
-	http.HandleFunc("/put/books", c.UpdateABook)
+	r.HandleFunc("/", c.Index)
 
-	err := http.ListenAndServe("localhost:8080", nil)
+	// r.Route("/books", func(r chi.Router) {
+
+	// })
+
+	r.Get("/books", c.GetAllBooks)
+	r.Post("/books", c.AddABook)
+	r.Put("/books", c.UpdateABook)
+	r.Delete("/books/{id}", c.DeleteABook)
+
+	err := http.ListenAndServe("localhost:8080", r)
 	helpers.CheckErr("error when serving endpoints: ", err)
 }
