@@ -26,6 +26,22 @@ type Book struct {
 	Year   int    `json:"year,omitempty"`
 }
 
+// GetBook returns a book from the database given its ID
+func GetBook(db *sql.DB, bookID int) (*Book, error) {
+	query := `SELECT * FROM books WHERE id=?;`
+	book := &Book{}
+
+	row := db.QueryRow(query, bookID)
+	// we always need to be using pointers with Scan, doesn't matter if the
+	// destination struct has been intiliazed with its pointer or not
+	if err := row.Scan(&book.ID, &book.ISBN, &book.Title, &book.Author,
+		&book.Genres, &book.Year); err != nil {
+		return nil, err
+	}
+
+	return book, nil
+}
+
 // GetBooks returns all books from the database
 func GetBooks(db *sql.DB) ([]Book, error) {
 	query := "SELECT * FROM books;"
@@ -67,26 +83,26 @@ func AddBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 	// this will return an error if there is a mismatch between the data received
 	// in the POST request and the struct fields the data is being written to
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(book)
-	if err != nil {
+	if err := decoder.Decode(book); err != nil {
 		return nil, err
 	}
 
 	query := `INSERT INTO books (isbn, title, author, genres, year) VALUES
 (?, ?, ?, ?, ?) RETURNING *;`
 
-	row := db.QueryRow(query, book.ISBN, book.Title, book.Author, book.Genres, book.Year)
+	row := db.QueryRow(query, book.ISBN, book.Title, book.Author,
+		book.Genres, book.Year)
 
 	// res will store the result returned by the DB, to be sent back to the user
 	// we do this so that the user can get to know the ID of the book that they have
 	// just inserted
 	res := &Book{}
-	err = row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author, &res.Genres, &res.Year)
-	if err != nil {
+	if err := row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author,
+		&res.Genres, &res.Year); err != nil {
 		return nil, err
 	}
 
-	return res, err
+	return res, nil
 }
 
 // UpdateBook receives the book to be updated as POST body and updates it in
@@ -95,19 +111,19 @@ func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 	book := &Book{}
 
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(book)
-	if err != nil {
+	if err := decoder.Decode(book); err != nil {
 		return nil, err
 	}
 
-	query := `UPDATE books SET isbn=?, title=?, author=?, genres=?, year=? WHERE id=?
-	RETURNING *;`
+	query := `UPDATE books SET isbn=?, title=?, author=?, genres=?, year=?
+	WHERE id=? RETURNING *;`
 
-	row := db.QueryRow(query, book.ISBN, book.Title, book.Author, book.Genres, book.Year, book.ID)
+	row := db.QueryRow(query, book.ISBN, book.Title, book.Author,
+		book.Genres, book.Year, book.ID)
 
 	res := &Book{}
-	err = row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author, &res.Genres, &res.Year)
-	if err != nil {
+	if err := row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author,
+		&res.Genres, &res.Year); err != nil {
 		return nil, err
 	}
 

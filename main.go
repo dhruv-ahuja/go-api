@@ -44,6 +44,7 @@ func main() {
 	r.Post("/books", c.AddABook)
 	r.Put("/books", c.UpdateABook)
 	r.Delete("/books/{id}", c.DeleteABook)
+	r.Get("/books/{id}", c.GetABook)
 
 	err := http.ListenAndServe("localhost:8080", r)
 	helpers.CheckErr("error when serving endpoints: ", err)

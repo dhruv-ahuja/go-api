@@ -64,6 +64,29 @@ func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(data))
 }
 
+func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
+	getID := chi.URLParam(r, "id")
+	if getID != "" {
+		bookID, err := strconv.Atoi(getID)
+		if err != nil {
+			helpers.CheckErr("error converting string to int: ", err)
+		}
+
+		book, err := database.GetBook(c.DB, bookID)
+		if err != nil {
+			helpers.CheckErr("error fetching book from the DB: ", err)
+		}
+
+		data, err := json.Marshal(book)
+		if err != nil {
+			helpers.CheckErr("error converting to JSON: ", err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, string(data))
+	}
+}
+
 // GetAllBooks performs the Read operation of the API
 func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := database.GetBooks(c.DB)
@@ -91,6 +114,7 @@ func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteABook performs the DELETE operation of the API
+// todo: add response for when id is not in the db
 func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 	// URL param fetches the named parameter in the URL
 	// in our case, `/books/{id}`: here 'id' is the url param
