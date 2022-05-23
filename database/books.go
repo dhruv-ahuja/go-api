@@ -107,7 +107,7 @@ func AddBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 
 // UpdateBook receives the book to be updated as POST body and updates it in
 // the database.
-func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
+func UpdateBook(db *sql.DB, decoder *json.Decoder, bookID int) (*Book, error) {
 	book := &Book{}
 
 	decoder.DisallowUnknownFields()
@@ -118,8 +118,9 @@ func UpdateBook(db *sql.DB, decoder *json.Decoder) (*Book, error) {
 	query := `UPDATE books SET isbn=?, title=?, author=?, genres=?, year=?
 	WHERE id=? RETURNING *;`
 
+	// bookID is entered separately since its being received through the URL
 	row := db.QueryRow(query, book.ISBN, book.Title, book.Author,
-		book.Genres, book.Year, book.ID)
+		book.Genres, book.Year, bookID)
 
 	res := &Book{}
 	if err := row.Scan(&res.ID, &res.ISBN, &res.Title, &res.Author,

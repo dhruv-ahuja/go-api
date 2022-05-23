@@ -112,20 +112,34 @@ func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 // UpdateABook performs the UPDATE operation of the API
 func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
+	// we send the ID in the URL and the book data in the request body
+	// the ID is verified and only then is the entry overwritten with the new data
+	getID := chi.URLParam(r, "id")
 
-	book, err := database.UpdateBook(c.DB, decoder)
-	helpers.CheckErr("error updating book in database: ", err)
+	if getID != "" {
+		bookID, err := strconv.Atoi(getID)
+		helpers.CheckErr("error converting string to int: ", err)
 
-	data, err := json.Marshal(book)
-	helpers.CheckErr("error converting data to JSON: ", err)
+		decoder := json.NewDecoder(r.Body)
+		book, err := database.UpdateBook(c.DB, decoder, bookID)
+		if err != nil && err != sql.ErrNoRows {
+			helpers.CheckErr("error updating book in database: ", err)
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintln(w, string(data))
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+		data, err := json.Marshal(book)
+		helpers.CheckErr("error converting data to JSON: ", err)
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, string(data))
+
+	}
 }
 
 // DeleteABook performs the DELETE operation of the API
-// todo: add response for when id is not in the db
 func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 	// URL param fetches the named parameter in the URL
 	// in our case, `/books/{id}`: here 'id' is the url param
@@ -144,11 +158,11 @@ func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 		// the ID was invalid if no rows were affected, so we just return a 404
 		if rows, _ := res.RowsAffected(); rows == 0 {
 			w.WriteHeader(http.StatusNotFound)
+		} else {
+			// StatusNoContent or Status 204 indicates that the request was fulfilled
+			// we don't need to send any data back, ideal response for a delete request
+			w.WriteHeader(http.StatusNoContent)
 		}
 
-		// StatusNoContent or Status 204 indicates that the request was fulfilled
-		// we don't need to send any data back, ideal response for a delete request
-		w.WriteHeader(http.StatusNoContent)
 	}
-
 }

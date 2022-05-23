@@ -42,7 +42,8 @@ func main() {
 
 	r.Get("/books", c.GetAllBooks)
 	r.Post("/books", c.AddABook)
-	r.Put("/books", c.UpdateABook)
+
+	r.Put("/books/{id}", c.UpdateABook)
 	r.Delete("/books/{id}", c.DeleteABook)
 	r.Get("/books/{id}", c.GetABook)
 
