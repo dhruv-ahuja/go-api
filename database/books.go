@@ -9,9 +9,11 @@ import (
 )
 
 type Store interface {
+	GetBook(*sql.DB, int) (*Book, error)
 	GetBooks(*sql.DB) ([]Book, error)
 	AddBook(*sql.DB, *json.Decoder) (*Book, error)
-	UpdateBook(*sql.DB, *json.Decoder) (*Book, error)
+	UpdateBook(*sql.DB, *json.Decoder, int) (*Book, error)
+	DeleteBook(*sql.DB, int) (sql.Result, error)
 }
 
 type Book struct {
