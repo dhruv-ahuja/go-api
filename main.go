@@ -51,17 +51,16 @@ func main() {
 		fmt.Fprintln(w, string(data))
 	})
 
-	// todo: setup route for the books CRUD endpoints
+	// using subrouter for the routes sharing the same URL but using different
+	// request types
 	r.Route("/books", func(r chi.Router) {
+		r.Get("/", c.GetAllBooks)
+		r.Post("/", c.AddABook)
 
+		r.Get("/{id}", c.GetABook)
+		r.Put("/{id}", c.UpdateABook)
+		r.Delete("/{id}", c.DeleteABook)
 	})
-
-	r.Get("/books", c.GetAllBooks)
-	r.Post("/books", c.AddABook)
-
-	r.Put("/books/{id}", c.UpdateABook)
-	r.Delete("/books/{id}", c.DeleteABook)
-	r.Get("/books/{id}", c.GetABook)
 
 	err := http.ListenAndServe("localhost:8080", r)
 	helpers.CheckErr("error when serving endpoints: ", err)
