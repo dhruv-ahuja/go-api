@@ -18,7 +18,7 @@ type Connection struct {
 
 // defining the struct to be used during responses
 // structs are converted to JSON using the `marshal` function
-type jsonResponse struct {
+type JsonResponse struct {
 	Message string   `json:"message"`
 	Data    []string `json:"data,omitempty"`
 }
@@ -31,7 +31,7 @@ func NewConnection(db *sql.DB) *Connection {
 
 // Index is the entrypoint to the api
 func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
-	msg := jsonResponse{
+	msg := JsonResponse{
 		Message: "Hello, World!",
 	}
 

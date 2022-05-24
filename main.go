@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,9 +37,24 @@ func main() {
 
 	r.HandleFunc("/", c.Index)
 
-	// r.Route("/books", func(r chi.Router) {
+	// making a custom 404 page
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		msg := api.JsonResponse{
+			Message: "invalid URL or page not found",
+		}
 
-	// })
+		data, err := json.Marshal(msg)
+		helpers.CheckErr("Error converting data to JSON: ", err)
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, string(data))
+	})
+
+	// todo: setup route for the books CRUD endpoints
+	r.Route("/books", func(r chi.Router) {
+
+	})
 
 	r.Get("/books", c.GetAllBooks)
 	r.Post("/books", c.AddABook)
