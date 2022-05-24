@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -26,42 +25,17 @@ func main() {
 	db := database.Init(dbPath)
 	defer db.Close()
 
-	// creating a Connection instance to use to register handlers for the
-	// web server
-	c := api.NewConnection(db)
 	// implement chi as the router of choice to get more functionality over
 	// the net/http router
 	r := chi.NewRouter()
 
-	fmt.Println("live on port 8080...")
+	// creating a Connection instance to use to register handlers for the
+	// web server
+	c := api.NewConnection(db, r)
+	c.SetupRoutes(c.Router)
 
-	r.HandleFunc("/", c.Index)
+	fmt.Println("live on http://localhost:8080...")
 
-	// making a custom 404 page
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		msg := api.JsonResponse{
-			Message: "invalid URL or page not found",
-		}
-
-		data, err := json.Marshal(msg)
-		helpers.CheckErr("Error converting data to JSON: ", err)
-
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(data))
-	})
-
-	// using subrouter for the routes sharing the same URL but using different
-	// request types
-	r.Route("/books", func(r chi.Router) {
-		r.Get("/", c.GetAllBooks)
-		r.Post("/", c.AddABook)
-
-		r.Get("/{id}", c.GetABook)
-		r.Put("/{id}", c.UpdateABook)
-		r.Delete("/{id}", c.DeleteABook)
-	})
-
-	err := http.ListenAndServe("localhost:8080", r)
+	err := http.ListenAndServe("localhost:8080", c.Router)
 	helpers.CheckErr("error when serving endpoints: ", err)
 }

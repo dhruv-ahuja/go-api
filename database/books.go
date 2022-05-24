@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 )
 
-type Store interface {
+type BookStore interface {
 	GetBook(*sql.DB, int) (*Book, error)
 	GetBooks(*sql.DB) ([]Book, error)
 	AddBook(*sql.DB, *json.Decoder) (*Book, error)

@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,7 +12,15 @@ import (
 )
 
 type Connection struct {
-	DB *sql.DB
+	DB     *sql.DB
+	Router *chi.Mux
+}
+
+func NewConnection(db *sql.DB, r *chi.Mux) *Connection {
+	return &Connection{
+		DB:     db,
+		Router: r,
+	}
 }
 
 // defining the struct to be used during responses
@@ -21,12 +28,6 @@ type Connection struct {
 type JsonResponse struct {
 	Message string   `json:"message"`
 	Data    []string `json:"data,omitempty"`
-}
-
-func NewConnection(db *sql.DB) *Connection {
-	return &Connection{
-		DB: db,
-	}
 }
 
 // Index is the entrypoint to the api
@@ -39,9 +40,9 @@ func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
 	helpers.CheckErr("error converting data to JSON: ", err)
 
 	w.Header().Set("Content-Type", "application/json")
-	// data marshaled to JSON is in the form of a slice of bytes, convert it to
-	// string to make it usable for the writer
-	fmt.Fprintln(w, string(data))
+	// using Write now, instead of fmt.Fprintln(). Saves us on the conversion
+	// cost to string for the JSON slice of bytes contained in 'data'
+	w.Write(data)
 }
 
 // AddABook performs the Create operation of the API
@@ -60,8 +61,7 @@ func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 	// setting the header status code to 201/Created to indicate success
 	// with creating a new resource
 	w.WriteHeader(http.StatusCreated)
-
-	fmt.Fprintln(w, string(data))
+	w.Write(data)
 }
 
 func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
@@ -82,13 +82,14 @@ func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
 		// 404 status code to indicate resource wasn't found
 		if err == sql.ErrNoRows {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 
 		data, err := json.Marshal(book)
 		helpers.CheckErr("error converting to JSON: ", err)
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(data))
+		w.Write(data)
 	}
 }
 
@@ -101,13 +102,14 @@ func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 	if err == sql.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	data, err := json.Marshal(books)
 	helpers.CheckErr("error converting to JSON: ", err)
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(data))
+	w.Write(data)
 }
 
 // UpdateABook performs the UPDATE operation of the API
@@ -128,14 +130,14 @@ func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
 
 		if err == sql.ErrNoRows {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 
 		data, err := json.Marshal(book)
 		helpers.CheckErr("error converting data to JSON: ", err)
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, string(data))
-
+		w.Write(data)
 	}
 }
 
