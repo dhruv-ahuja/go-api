@@ -37,6 +37,12 @@ type BookShelf struct {
 	DB *sql.DB
 }
 
+func NewShelf(db *sql.DB) *BookShelf {
+	return &BookShelf{
+		DB: db,
+	}
+}
+
 // GetBook returns a book from the database given its ID
 func (b *BookShelf) GetBook(bookID int) (*Book, error) {
 	query := `SELECT * FROM books WHERE id=?;`

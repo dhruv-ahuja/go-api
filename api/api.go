@@ -12,13 +12,13 @@ import (
 )
 
 type Connection struct {
-	DB     *sql.DB
+	Store  database.BookStore
 	Router *chi.Mux
 }
 
-func NewConnection(db *sql.DB, r *chi.Mux) *Connection {
+func NewConnection(Store database.BookStore, r *chi.Mux) *Connection {
 	return &Connection{
-		DB:     db,
+		Store:  Store,
 		Router: r,
 	}
 }
@@ -49,7 +49,7 @@ func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
 func (c *Connection) AddABook(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	book, err := database.AddBook(c.DB, decoder)
+	book, err := c.Store.AddBook(decoder)
 	helpers.CheckErr("error adding book to database: ", err)
 
 	data, err := json.Marshal(book)
@@ -71,7 +71,7 @@ func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
 		bookID, err := strconv.Atoi(getID)
 		helpers.CheckErr("error converting string to int: ", err)
 
-		book, err := database.GetBook(c.DB, bookID)
+		book, err := c.Store.GetBook(bookID)
 		// if the error is 'ErrNoRows' that means that no data was found
 		// for that ID
 		if err != nil && err != sql.ErrNoRows {
@@ -95,7 +95,7 @@ func (c *Connection) GetABook(w http.ResponseWriter, r *http.Request) {
 
 // GetAllBooks performs the Read operation of the API
 func (c *Connection) GetAllBooks(w http.ResponseWriter, r *http.Request) {
-	books, err := database.GetBooks(c.DB)
+	books, err := c.Store.GetBooks()
 	if err != nil && err != sql.ErrNoRows {
 		helpers.CheckErr("error fetching books from the DB", err)
 	}
@@ -123,7 +123,7 @@ func (c *Connection) UpdateABook(w http.ResponseWriter, r *http.Request) {
 		helpers.CheckErr("error converting string to int: ", err)
 
 		decoder := json.NewDecoder(r.Body)
-		book, err := database.UpdateBook(c.DB, decoder, bookID)
+		book, err := c.Store.UpdateBook(decoder, bookID)
 		if err != nil && err != sql.ErrNoRows {
 			helpers.CheckErr("error updating book in database: ", err)
 		}
@@ -154,7 +154,7 @@ func (c *Connection) DeleteABook(w http.ResponseWriter, r *http.Request) {
 
 		// we have to check whether the ID was valid or not
 		// the query result will help us do that
-		res, err := database.DeleteBook(c.DB, bookID)
+		res, err := c.Store.DeleteBook(bookID)
 		helpers.CheckErr("error deleting book from database: ", err)
 
 		// the ID was invalid if no rows were affected, so we just return a 404

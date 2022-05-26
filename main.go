@@ -29,9 +29,15 @@ func main() {
 	// the net/http router
 	r := chi.NewRouter()
 
+	// our BookShelf struct implements the Store interface
+	var store database.BookStore
+	bookShelf := database.NewShelf(db)
+	// this store will be used by the Connection struct
+	store = bookShelf
+
 	// creating a Connection instance to use to register handlers for the
 	// web server
-	c := api.NewConnection(db, r)
+	c := api.NewConnection(store, r)
 	c.SetupRoutes(c.Router)
 
 	fmt.Println("live on http://localhost:8080...")
