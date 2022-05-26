@@ -23,17 +23,16 @@ func NewConnection(Store database.BookStore, r *chi.Mux) *Connection {
 	}
 }
 
-// defining the struct to be used during responses
+// defining the struct to be used with responses
 // structs are converted to JSON using the `marshal` function
 type JsonResponse struct {
 	Message string   `json:"message"`
 	Data    []string `json:"data,omitempty"`
 }
 
-// Index is the entrypoint to the api
-func (c *Connection) Index(w http.ResponseWriter, r *http.Request) {
+func (c *Connection) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	msg := JsonResponse{
-		Message: "Hello, World!",
+		Message: "API is up and running",
 	}
 
 	data, err := json.Marshal(msg)

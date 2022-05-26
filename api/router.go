@@ -10,7 +10,7 @@ import (
 )
 
 func (c *Connection) SetupRoutes(r *chi.Mux) {
-	r.HandleFunc("/", c.Index)
+	r.HandleFunc("/", c.HealthCheck)
 
 	// making a custom 404 page
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
